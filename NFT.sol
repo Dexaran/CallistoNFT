@@ -65,6 +65,8 @@ abstract contract NFTReceiver {
 
 contract NFT is INFT{
     
+    using Address for address;
+    
     event Transfer (address from, address to, uint256 tokenId);
     event TransferData (bytes data);
     
@@ -177,6 +179,10 @@ contract NFT is INFT{
     function transfer(address _to, uint256 _tokenId, bytes calldata _data) public override returns (bool)
     {
         _transfer(msg.sender, _to, _tokenId);
+        if(_to.isContract())
+        {
+            NFTReceiver(_to).nftReceived(msg.sender, _tokenId, _data);
+        }
         emit TransferData(_data);
         return true;
     }
