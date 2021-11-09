@@ -52,7 +52,7 @@ interface INFT {
     function silentTransfer(address _to, uint256 _tokenId) external returns (bool);
     
     function priceOf(uint256 _tokenId) external view returns (uint256);
-    function bidOf(uint256 _tokenId) external view returns (uint256 price, address payable bidder);
+    function bidOf(uint256 _tokenId) external view returns (uint256 price, address payable bidder, uint256 timestamp);
     function getTokenProperties(uint256 _tokenId) external view returns (Properties memory);
     
     function setBid(uint256 _tokenId, uint256 _amountInWEI) payable external returns (bool);
@@ -67,18 +67,28 @@ contract NFT is INFT{
     
     using Address for address;
     
-    event Transfer (address from, address to, uint256 tokenId);
+    event Transfer     (address from, address to, uint256 tokenId);
     event TransferData (bytes data);
     
     mapping (uint256 => Properties) private _tokenProperties;
+    mapping (uint32 => Fee)         public feeLevels; // level # => (fee receiver, fee percentage)
+    
+    uint256 public bidLock = 1 days; // Time required for a bid to become withdrawable.
     
     struct Bid {
         address payable bidder;
         uint256 amountInWEI;
+        uint256 timestamp;
+    }
+    
+    struct Fee {
+        address payable feeReceiver;
+        uint256 feePercentage;
     }
     
     mapping (uint256 => uint256) private _asks; // tokenID => price of this token (in WEI)
-    mapping (uint256 => Bid) private _bids; // tokenID => price of this token (in WEI)
+    mapping (uint256 => Bid)     private _bids; // tokenID => price of this token (in WEI)
+    mapping (uint256 => uint32)  private _tokenFeeLevels; // tokenID => level ID / 0 by default
 
     // Token name
     string private _name;
@@ -95,9 +105,29 @@ contract NFT is INFT{
     /**
      * @dev Initializes the contract by setting a `name` and a `symbol` to the token collection.
      */
-    constructor(string memory name_, string memory symbol_) {
-        _name = name_;
+    constructor(string memory name_, string memory symbol_, uint256 _defaultFee) {
+        _name   = name_;
         _symbol = symbol_;
+        feeLevels[0].feeReceiver   = payable(msg.sender);
+        feeLevels[0].feePercentage = _defaultFee;
+    }
+    
+    modifier checkTrade(uint256 _tokenId)
+    {
+        _;
+        (uint256 _bid, address payable _bidder, uint256 _timestamp) = bidOf(_tokenId);
+        if(priceOf(_tokenId) <= _bid)
+        {
+            uint256 _reward = _bid - _claimFee(_bid, _tokenId);
+            payable(ownerOf(_tokenId)).transfer(_reward);
+            delete _bids[_tokenId];
+            delete _asks[_tokenId];
+            _transfer(ownerOf(_tokenId), _bidder, _tokenId);
+            if(address(_bidder).isContract())
+            {
+                NFTReceiver(_bidder).nftReceived(ownerOf(_tokenId), _tokenId, hex"000000");
+            }
+        }
     }
     
     function standard() public view virtual override returns (string memory)
@@ -112,11 +142,11 @@ contract NFT is INFT{
         return _asks[_tokenId];
     }
     
-    function bidOf(uint256 _tokenId) public view virtual override returns (uint256 price, address payable bidder)
+    function bidOf(uint256 _tokenId) public view virtual override returns (uint256 price, address payable bidder, uint256 timestamp)
     {
         address owner = _owners[_tokenId];
         require(owner != address(0), "NFT: owner query for nonexistent token");
-        return (_bids[_tokenId].amountInWEI, _bids[_tokenId].bidder);
+        return (_bids[_tokenId].amountInWEI, _bids[_tokenId].bidder, _bids[_tokenId].timestamp);
     }
     
     function getTokenProperties(uint256 _tokenId) public view virtual override returns (Properties memory)
@@ -135,16 +165,16 @@ contract NFT is INFT{
         return owner;
     }
     
-    function setPrice(uint256 _tokenId, uint256 _amountInWEI) public returns (bool)
+    function setPrice(uint256 _tokenId, uint256 _amountInWEI) checkTrade(_tokenId) public returns (bool)
     {
         require(ownerOf(_tokenId) == msg.sender, "Setting asks is only allowed for owned NFTs!");
         _asks[_tokenId] = _amountInWEI;
         return true;
     }
     
-    function setBid(uint256 _tokenId, uint256 _amountInWEI) payable public virtual override returns (bool)
+    function setBid(uint256 _tokenId, uint256 _amountInWEI) payable checkTrade(_tokenId) public virtual override returns (bool)
     {
-        (uint256 _previousBid, address payable _previousBidder) = bidOf(_tokenId);
+        (uint256 _previousBid, address payable _previousBidder, ) = bidOf(_tokenId);
         require(msg.value == _amountInWEI, "Wrong payment value provided");
         require(msg.value > _previousBid, "New bid must exceed the existing one");
         
@@ -160,8 +190,9 @@ contract NFT is INFT{
     
     function withdrawBid(uint256 _tokenId) public virtual override returns (bool)
     {
-        (uint256 _bid, address payable _bidder) = bidOf(_tokenId);
+        (uint256 _bid, address payable _bidder, uint256 _timestamp) = bidOf(_tokenId);
         require(msg.sender == _bidder, "Can not withdraw someone elses bid");
+        require(block.timestamp > _timestamp + bidLock, "Bid is time-locked");
         
         _bidder.transfer(_bid);
         delete _bids[_tokenId];
@@ -195,6 +226,11 @@ contract NFT is INFT{
     
     function _exists(uint256 tokenId) internal view virtual returns (bool) {
         return _owners[tokenId] != address(0);
+    }
+    
+    function _claimFee(uint256 _amountFrom, uint256 _tokenId) internal returns (uint256)
+    {
+        return 0;        
     }
     
     function _safeMint(
