@@ -83,7 +83,9 @@ contract NFT is INFT{
     
     struct Fee {
         address payable feeReceiver;
-        uint256 feePercentage;
+        uint256 feePercentage; // Will be divided by 100000 during calculations
+                               // feePercentage of 100 means 0.1% fee
+                               // feePercentage of 2500 means 2.5% fee
     }
     
     mapping (uint256 => uint256) private _asks; // tokenID => price of this token (in WEI)
@@ -115,7 +117,7 @@ contract NFT is INFT{
     modifier checkTrade(uint256 _tokenId)
     {
         _;
-        (uint256 _bid, address payable _bidder, uint256 _timestamp) = bidOf(_tokenId);
+        (uint256 _bid, address payable _bidder,) = bidOf(_tokenId);
         if(priceOf(_tokenId) <= _bid)
         {
             uint256 _reward = _bid - _claimFee(_bid, _tokenId);
@@ -230,7 +232,13 @@ contract NFT is INFT{
     
     function _claimFee(uint256 _amountFrom, uint256 _tokenId) internal returns (uint256)
     {
-        return 0;        
+        uint32 _level          = _tokenFeeLevels[_tokenId];
+        address _feeReceiver   = feeLevels[_level].feeReceiver;
+        uint256 _feePercentage = feeLevels[_level].feePercentage;
+        
+        uint256 _feeAmount = _amountFrom * _feePercentage / 100000;
+        payable(_feeReceiver).transfer(_feeAmount);
+        return _feeAmount;        
     }
     
     function _safeMint(
