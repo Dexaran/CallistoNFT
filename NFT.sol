@@ -174,7 +174,7 @@ contract NFT is INFT{
         return true;
     }
     
-    function setBid(uint256 _tokenId, uint256 _amountInWEI) payable checkTrade(_tokenId) public virtual override returns (bool)
+    function setBid(uint256 _tokenId, uint256 _amountInWEI, bytes calldata _data) payable checkTrade(_tokenId) public virtual override returns (bool)
     {
         (uint256 _previousBid, address payable _previousBidder, ) = bidOf(_tokenId);
         require(msg.value == _amountInWEI, "Wrong payment value provided");
