@@ -67,7 +67,7 @@ contract NFT is INFT{
     
     using Address for address;
     
-    event Transfer     (address from, address to, uint256 tokenId);
+    event Transfer     (address indexed from, address indexed to, uint256 indexed tokenId);
     event TransferData (bytes data);
     
     mapping (uint256 => Properties) private _tokenProperties;
