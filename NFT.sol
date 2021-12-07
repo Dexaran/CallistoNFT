@@ -55,7 +55,8 @@ interface INFT {
     function bidOf(uint256 _tokenId) external view returns (uint256 price, address payable bidder, uint256 timestamp);
     function getTokenProperties(uint256 _tokenId) external view returns (Properties memory);
     
-    function setBid(uint256 _tokenId, uint256 _amountInWEI) payable external returns (bool);
+    function setBid(uint256 _tokenId, bytes calldata _data) payable external; // bid amount is defined by msg.value
+    function setPrice(uint256 _tokenId, uint256 _amountInWEI) external;
     function withdrawBid(uint256 _tokenId) external returns (bool);
 }
 
@@ -63,7 +64,7 @@ abstract contract NFTReceiver {
     function nftReceived(address _from, uint256 _tokenId, bytes calldata _data) external virtual;
 }
 
-contract NFT is INFT{
+contract NFT is INFT {
     
     using Address for address;
     
@@ -167,17 +168,14 @@ contract NFT is INFT{
         return owner;
     }
     
-    function setPrice(uint256 _tokenId, uint256 _amountInWEI) checkTrade(_tokenId) public returns (bool)
-    {
+    function setPrice(uint256 _tokenId, uint256 _amountInWEI) checkTrade(_tokenId) public virtual override {
         require(ownerOf(_tokenId) == msg.sender, "Setting asks is only allowed for owned NFTs!");
         _asks[_tokenId] = _amountInWEI;
-        return true;
     }
     
-    function setBid(uint256 _tokenId, uint256 _amountInWEI, bytes calldata _data) payable checkTrade(_tokenId) public virtual override returns (bool)
+    function setBid(uint256 _tokenId, bytes calldata _data) payable checkTrade(_tokenId) public virtual override
     {
         (uint256 _previousBid, address payable _previousBidder, ) = bidOf(_tokenId);
-        require(msg.value == _amountInWEI, "Wrong payment value provided");
         require(msg.value > _previousBid, "New bid must exceed the existing one");
         
         // Return previous bid if the current one exceeds it.
@@ -185,9 +183,8 @@ contract NFT is INFT{
         {
             _previousBidder.transfer(_previousBid);
         }
-        _bids[_tokenId].amountInWEI = _amountInWEI;
+        _bids[_tokenId].amountInWEI = msg.value;
         _bids[_tokenId].bidder      = payable(msg.sender);
-        return true;
     }
     
     function withdrawBid(uint256 _tokenId) public virtual override returns (bool)
