@@ -739,15 +739,3 @@ abstract contract ClassifiedNFT is NFT, IClassifiedNFT {
         class_properties[_classID][_propertyID] = class_properties[_classID][_propertyID].concat(_content);
     }
 }
-
-contract MyNFT is ClassifiedNFT
-{
-    
-    /**
-     * @dev Initializes the contract by setting a `name` and a `symbol` to the token collection.
-     */
-    constructor() {
-        feeLevels[0].feeReceiver   = payable(msg.sender);
-        feeLevels[0].feePercentage = 0;
-    }
-}
