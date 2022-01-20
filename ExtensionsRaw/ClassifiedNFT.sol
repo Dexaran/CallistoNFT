@@ -473,16 +473,6 @@ contract NFT is INFT {
 
     // Mapping owner address to token count
     mapping(address => uint256) private _balances;
-
-    /**
-     * @dev Initializes the contract by setting a `name` and a `symbol` to the token collection.
-     */
-    constructor(string memory name_, string memory symbol_, uint256 _defaultFee) {
-        _name   = name_;
-        _symbol = symbol_;
-        feeLevels[0].feeReceiver   = payable(msg.sender);
-        feeLevels[0].feePercentage = _defaultFee;
-    }
     
     modifier checkTrade(uint256 _tokenId)
     {
@@ -679,16 +669,7 @@ contract NFT is INFT {
  * @dev See https://eips.ethereum.org/EIPS/eip-721
  */
 interface IClassifiedNFT is INFT {
-    /**
-     * @dev Returns the total amount of tokens stored by the contract.
-     */
-    function totalSupply() external view returns (uint256);
-
-    /**
-     * @dev Returns a token ID owned by `owner` at a given `index` of its token list.
-     * Use along with {balanceOf} to enumerate all of ``owner``'s tokens.
-     */
-    function getClassPropertyByID(uint256 _tokenID) external view returns (string[] memory);
+    
 }
 
 
