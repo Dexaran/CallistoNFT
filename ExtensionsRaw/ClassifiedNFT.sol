@@ -750,6 +750,6 @@ abstract contract ClassifiedNFT is NFT, IClassifiedNFT {
 
     function appendClassProperty(uint256 _classID, uint256 _propertyID, string memory _content) public /* onlyOwner */ onlyExistingClasses(_classID)
     {
-        class_properties[_classID][_propertyID] = concat(class_properties[_classID][_propertyID], _content);
+        class_properties[_classID][_propertyID] = class_properties[_classID][_propertyID].concat(_content);
     }
 }
