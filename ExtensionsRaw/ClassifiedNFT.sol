@@ -698,6 +698,14 @@ abstract contract ClassifiedNFT is NFT, IClassifiedNFT {
         nextClassIndex++;
     }
 
+    function addTokenClassProperties(uint256 _propertiesCount) public /* onlyOwner */
+    {
+        for (uint i = 0; i < _propertiesCount; i++)
+        {
+            class_properties[nextClassIndex].push("");
+        }
+    }
+
     function modifyClassProperty(uint256 _classID, uint256 _propertyID, string memory _content) public /* onlyOwner */ onlyExistingClasses(_classID)
     {
         class_properties[_classID][_propertyID] = _content;
@@ -726,6 +734,11 @@ abstract contract ClassifiedNFT is NFT, IClassifiedNFT {
     function getClassPropertiesForTokenID(uint256 _tokenID) public view onlyExistingClasses(token_classes[_tokenID]) returns (string[] memory)
     {
         return class_properties[token_classes[_tokenID]];
+    }
+
+    function getClassPropertyForTokenID(uint256 _tokenID, uint256 _propertyID) public view onlyExistingClasses(token_classes[_tokenID]) returns (string memory)
+    {
+        return class_properties[token_classes[_tokenID]][_propertyID];
     }
     
     function mintWithClass(address to, uint256 tokenId, uint256 classId)  public /* onlyOwner */ onlyExistingClasses(classId)
