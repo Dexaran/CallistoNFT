@@ -482,7 +482,7 @@ contract ExtendedNFT is INFT {
     {
         _;
         (uint256 _bid, address payable _bidder,) = bidOf(_tokenId);
-        if(priceOf(_tokenId) <= _bid)
+        if(priceOf(_tokenId) > 0 && priceOf(_tokenId) <= _bid)
         {
             uint256 _reward = _bid - _claimFee(_bid, _tokenId);
             payable(ownerOf(_tokenId)).transfer(_reward);

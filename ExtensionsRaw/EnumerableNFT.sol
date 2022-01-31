@@ -119,7 +119,7 @@ contract NFT is INFT {
     {
         _;
         (uint256 _bid, address payable _bidder,) = bidOf(_tokenId);
-        if(priceOf(_tokenId) <= _bid)
+        if(priceOf(_tokenId) > 0 && priceOf(_tokenId) <= _bid)
         {
             uint256 _reward = _bid - _claimFee(_bid, _tokenId);
             payable(ownerOf(_tokenId)).transfer(_reward);
@@ -305,10 +305,6 @@ contract NFT is INFT {
     ) internal virtual {}
 }
 
-/**
- * @title ERC-721 Non-Fungible Token Standard, optional enumeration extension
- * @dev See https://eips.ethereum.org/EIPS/eip-721
- */
 interface IEnumerableNFT is INFT {
     /**
      * @dev Returns the total amount of tokens stored by the contract.
@@ -328,11 +324,6 @@ interface IEnumerableNFT is INFT {
     function tokenByIndex(uint256 index) external view returns (uint256);
 }
 
-/**
- * @dev This implements an optional extension of {ERC721} defined in the EIP that adds
- * enumerability of all the token ids in the contract as well as all token ids owned by each
- * account.
- */
 abstract contract EnumerableNFT is NFT, IEnumerableNFT {
     // Mapping from owner to list of owned token IDs
     mapping(address => mapping(uint256 => uint256)) private _ownedTokens;
@@ -346,24 +337,15 @@ abstract contract EnumerableNFT is NFT, IEnumerableNFT {
     // Mapping from token id to position in the allTokens array
     mapping(uint256 => uint256) private _allTokensIndex;
 
-    /**
-     * @dev See {IERC721Enumerable-tokenOfOwnerByIndex}.
-     */
     function tokenOfOwnerByIndex(address owner, uint256 index) public view virtual override returns (uint256) {
         require(index < NFT.balanceOf(owner), "NFT: owner index out of bounds");
         return _ownedTokens[owner][index];
     }
 
-    /**
-     * @dev See {IERC721Enumerable-totalSupply}.
-     */
     function totalSupply() public view virtual override returns (uint256) {
         return _allTokens.length;
     }
 
-    /**
-     * @dev See {IERC721Enumerable-tokenByIndex}.
-     */
     function tokenByIndex(uint256 index) public view virtual override returns (uint256) {
         require(index < EnumerableNFT.totalSupply(), "NFT: global index out of bounds");
         return _allTokens[index];
