@@ -67,7 +67,8 @@ abstract contract NFTReceiver {
 contract NFT is INFT {
     
     using Address for address;
-    
+
+    event NewBid       (uint256 indexed tokenID, uint256 indexed bidAmount, bytes bidData);
     event Transfer     (address indexed from, address indexed to, uint256 indexed tokenId);
     event TransferData (bytes data);
     
@@ -186,6 +187,7 @@ contract NFT is INFT {
         _bids[_tokenId].amountInWEI = msg.value;
         _bids[_tokenId].bidder      = payable(msg.sender);
         _bids[_tokenId].timestamp   = block.timestamp;
+        emit NewBid(_tokenId, msg.value, _data);
     }
     
     function withdrawBid(uint256 _tokenId) public virtual override returns (bool)
