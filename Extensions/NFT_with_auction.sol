@@ -2,72 +2,16 @@
 
 pragma solidity ^0.8.0;
 
-library Address {
-    /**
-     * @dev Returns true if `account` is a contract.
-     *
-     * This test is non-exhaustive, and there may be false-negatives: during the
-     * execution of a contract's constructor, its address will be reported as
-     * not containing a contract.
-     *
-     * > It is unsafe to assume that an address for which this function returns
-     * false is an externally-owned account (EOA) and not a contract.
-     */
-    function isContract(address account) internal view returns (bool) {
-        // This method relies in extcodesize, which returns 0 for contracts in
-        // construction, since the code is only stored at the end of the
-        // constructor execution.
+//import "../Libraries/Address.sol"; **Address is declared on NFT.sol"
+import "../Libraries/Strings.sol";
+import "../NFT.sol";
 
-        uint256 size;
-        // solhint-disable-next-line no-inline-assembly
-        assembly { size := extcodesize(account) }
-        return size > 0;
-    }
-}
-
-interface INFT {
-    
-    struct Properties {
-        
-        // In this example properties of the given NFT are stored
-        // in a dynamically sized array of strings
-        // properties can be re-defined for any specific info
-        // that a particular NFT is intended to store.
-        
-        /* Properties could look like this:
-        bytes   property1;
-        bytes   property2;
-        address property3;
-        */
-        
-        string[] properties;
-    }
-    
-    function name() external view returns (string memory);
-    function symbol() external view returns (string memory);
-    function standard() external view returns (string memory);
-    function balanceOf(address _who) external view returns (uint256);
-    function ownerOf(uint256 _tokenId) external view returns (address);
-    function transfer(address _to, uint256 _tokenId, bytes calldata _data) external returns (bool);
-    function silentTransfer(address _to, uint256 _tokenId) external returns (bool);
-    
-    function priceOf(uint256 _tokenId) external view returns (uint256);
-    function bidOf(uint256 _tokenId) external view returns (uint256 price, address payable bidder, uint256 timestamp);
-    function getTokenProperties(uint256 _tokenId) external view returns (Properties memory);
-    
-    function setBid(uint256 _tokenId, bytes calldata _data) payable external; // bid amount is defined by msg.value
-    function setPrice(uint256 _tokenId, uint256 _amountInWEI) external;
-    function withdrawBid(uint256 _tokenId) external returns (bool);
-}
-
-abstract contract NFTReceiver {
-    function nftReceived(address _from, uint256 _tokenId, bytes calldata _data) external virtual;
-}
-
-contract NFT is INFT {
-    
+// ExtendedNFT is a version of the CallistoNFT standard token
+// that implements a set of function for NFT content management
+contract ExtendedNFT is INFT {
+    using Strings for string;
     using Address for address;
-
+    
     event NewBid       (uint256 indexed tokenID, uint256 indexed bidAmount, bytes bidData);
     event Transfer     (address indexed from, address indexed to, uint256 indexed tokenId);
     event TransferData (bytes data);
@@ -94,6 +38,8 @@ contract NFT is INFT {
     mapping (uint256 => Bid)     private _bids; // tokenID => price of this token (in WEI)
     mapping (uint256 => uint32)  private _tokenFeeLevels; // tokenID => level ID / 0 by default
 
+    uint256 private next_mint_id;
+
     // Token name
     string private _name;
 
@@ -105,16 +51,6 @@ contract NFT is INFT {
 
     // Mapping owner address to token count
     mapping(address => uint256) private _balances;
-
-    /**
-     * @dev Initializes the contract by setting a `name` and a `symbol` to the token collection.
-     */
-    constructor(string memory name_, string memory symbol_, uint256 _defaultFee) {
-        _name   = name_;
-        _symbol = symbol_;
-        feeLevels[0].feeReceiver   = payable(msg.sender);
-        feeLevels[0].feePercentage = _defaultFee;
-    }
     
     modifier checkTrade(uint256 _tokenId)
     {
@@ -138,6 +74,13 @@ contract NFT is INFT {
     {
         return "NFT X";
     }
+
+    function mint() public /* onlyOwner or onlyAdmin */ returns (uint256 _mintedId)
+    {
+        _safeMint(msg.sender, next_mint_id);
+        _mintedId = next_mint_id;
+        next_mint_id++;
+    }
     
     function priceOf(uint256 _tokenId) public view virtual override returns (uint256)
     {
@@ -156,6 +99,28 @@ contract NFT is INFT {
     function getTokenProperties(uint256 _tokenId) public view virtual override returns (Properties memory)
     {
         return _tokenProperties[_tokenId];
+    }
+
+    function getTokenProperty(uint256 _tokenId, uint256 _propertyId)  public view virtual returns (string memory)
+    {
+        return _tokenProperties[_tokenId].properties[_propertyId];
+    }
+
+    function addPropertyWithContent(uint256 _tokenId, string calldata _content) public /* onlyOwner or onlyTokenOwner */
+    {
+        // Check permission criteria
+
+        _tokenProperties[_tokenId].properties.push(_content);
+    }
+
+    function modifyProperty(uint256 _tokenId, uint256 _propertyId, string calldata _content) public /* onlyOwner or onlyTokenOwner*/
+    {
+        _tokenProperties[_tokenId].properties[_propertyId] = _content;
+    }
+
+    function appendProperty(uint256 _tokenId, uint256 _propertyId, string calldata _content) public /* onlyOwner or onlyTokenOwner*/
+    {
+        _tokenProperties[_tokenId].properties[_propertyId] = _tokenProperties[_tokenId].properties[_propertyId].concat(_content);
     }
     
     function balanceOf(address owner) public view virtual override returns (uint256) {
@@ -261,7 +226,7 @@ contract NFT is INFT {
     }
     
     function _burn(uint256 tokenId) internal virtual {
-        address owner = NFT.ownerOf(tokenId);
+        address owner = ExtendedNFT.ownerOf(tokenId);
 
         _beforeTokenTransfer(owner, address(0), tokenId);
         
@@ -277,7 +242,7 @@ contract NFT is INFT {
         address to,
         uint256 tokenId
     ) internal virtual {
-        require(NFT.ownerOf(tokenId) == from, "NFT: transfer of token that is not own");
+        require(ExtendedNFT.ownerOf(tokenId) == from, "NFT: transfer of token that is not own");
         require(to != address(0), "NFT: transfer to the zero address");
         
         _asks[tokenId] = 0; // Zero out price on transfer
@@ -305,4 +270,40 @@ contract NFT is INFT {
         address to,
         uint256 tokenId
     ) internal virtual {}
+}
+
+contract NFTSimpleAuction {
+
+    address public nft_contract;
+
+    uint256 public max_supply = 1; // This auction will sell exactly this number of NFTs.
+    uint256 public amount_sold = 0; // Increments on each successful NFT purchase until it reachess `max_supply`.
+
+    uint256 public start_timestamp = 1643125054; // UNIX timestamp of the auction start event.
+    uint256 public duration = 3 days;
+
+    uint public priceInWEI = 1e18; // 1 ether per NFT.
+
+    address payable public revenue = payable(0x01000B5fE61411C466b70631d7fF070187179Bbf); // This address has the rights to withdraw funds from the auction.
+
+    function buyNFT() public payable
+    {
+        require(msg.value >= priceInWEI, "Insufficient funds");
+        require(amount_sold < max_supply, "This auction has already sold all allocated NFTs");
+
+        uint256 _mintedId = ExtendedNFT(nft_contract).mint();
+        configureNFT(_mintedId);
+        amount_sold++;
+    }
+
+    function configureNFT(uint256 _tokenId) internal
+    {
+
+    }
+
+    function withdrawRevenue() public
+    {
+        require(msg.sender == revenue, "This action requires revenue permission");
+        revenue.transfer(address(this).balance);
+    }
 }

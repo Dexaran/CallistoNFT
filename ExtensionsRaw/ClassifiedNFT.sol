@@ -2,7 +2,6 @@
 
 pragma solidity ^0.8.0;
 
-
 //https://github.com/willitscale/solidity-util/blob/000a42d4d7c1491cde4381c29d4b775fa7e99aac/lib/Strings.sol#L317-L336
 
 /**
@@ -437,6 +436,7 @@ contract NFT is INFT {
     
     using Address for address;
     
+    event NewBid       (uint256 indexed tokenID, uint256 indexed bidAmount, bytes bidData);
     event Transfer     (address indexed from, address indexed to, uint256 indexed tokenId);
     event TransferData (bytes data);
     
@@ -473,6 +473,16 @@ contract NFT is INFT {
 
     // Mapping owner address to token count
     mapping(address => uint256) private _balances;
+    
+    /**
+     * @dev Initializes the contract by setting a `name` and a `symbol` to the token collection.
+     */
+    constructor(string memory name_, string memory symbol_, uint256 _defaultFee) {
+        _name   = name_;
+        _symbol = symbol_;
+        feeLevels[0].feeReceiver   = payable(msg.sender);
+        feeLevels[0].feePercentage = _defaultFee;
+    }
     
     modifier checkTrade(uint256 _tokenId)
     {
@@ -545,6 +555,7 @@ contract NFT is INFT {
         _bids[_tokenId].amountInWEI = msg.value;
         _bids[_tokenId].bidder      = payable(msg.sender);
         _bids[_tokenId].timestamp   = block.timestamp;
+        emit NewBid(_tokenId, msg.value, _data);
     }
     
     function withdrawBid(uint256 _tokenId) public virtual override returns (bool)
@@ -665,10 +676,24 @@ contract NFT is INFT {
 }
 
 interface IClassifiedNFT is INFT {
-    
+    function setClassForTokenID(uint256 _tokenID, uint256 _tokenClass) external;
+    function addNewTokenClass() external;
+    function addTokenClassProperties(uint256 _propertiesCount) external;
+    function modifyClassProperty(uint256 _classID, uint256 _propertyID, string memory _content) external;
+    function getClassProperty(uint256 _classID, uint256 _propertyID) external view returns (string memory);
+    function addClassProperty(uint256 _classID) external;
+    function getClassProperties(uint256 _classID) external view returns (string[] memory);
+    function getClassForTokenID(uint256 _tokenID) external view returns (uint256);
+    function getClassPropertiesForTokenID(uint256 _tokenID) external view returns (string[] memory);
+    function getClassPropertyForTokenID(uint256 _tokenID, uint256 _propertyID) external view returns (string memory);
+    function mintWithClass(address to, uint256 tokenId, uint256 classId)  external;
+    function appendClassProperty(uint256 _classID, uint256 _propertyID, string memory _content) external;
 }
 
-
+/**
+ * @title CallistoNFT Classified NFT
+ * @dev This extension adds propeties to NFTs based on classes.
+ */
 abstract contract ClassifiedNFT is NFT, IClassifiedNFT {
     using Strings for string;
 

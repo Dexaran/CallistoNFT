@@ -2,7 +2,6 @@
 
 pragma solidity ^0.8.0;
 
-
 //https://github.com/willitscale/solidity-util/blob/000a42d4d7c1491cde4381c29d4b775fa7e99aac/lib/Strings.sol#L317-L336
 
 /**
@@ -439,6 +438,7 @@ contract ExtendedNFT is INFT {
     using Strings for string;
     using Address for address;
     
+    event NewBid       (uint256 indexed tokenID, uint256 indexed bidAmount, bytes bidData);
     event Transfer     (address indexed from, address indexed to, uint256 indexed tokenId);
     event TransferData (bytes data);
     
@@ -477,6 +477,17 @@ contract ExtendedNFT is INFT {
 
     // Mapping owner address to token count
     mapping(address => uint256) private _balances;
+
+    /**
+     * @dev Initializes the contract by setting a `name` and a `symbol` to the token collection.
+     */
+    constructor(string memory name_, string memory symbol_, uint256 _defaultFee) {
+        _name   = name_;
+        _symbol = symbol_;
+        feeLevels[0].feeReceiver   = payable(msg.sender);
+        feeLevels[0].feePercentage = _defaultFee;
+    }
+    
     
     modifier checkTrade(uint256 _tokenId)
     {
@@ -578,6 +589,7 @@ contract ExtendedNFT is INFT {
         _bids[_tokenId].amountInWEI = msg.value;
         _bids[_tokenId].bidder      = payable(msg.sender);
         _bids[_tokenId].timestamp   = block.timestamp;
+        emit NewBid(_tokenId, msg.value, _data);
     }
     
     function withdrawBid(uint256 _tokenId) public virtual override returns (bool)
@@ -696,7 +708,6 @@ contract ExtendedNFT is INFT {
         uint256 tokenId
     ) internal virtual {}
 }
-
 
 contract NFTSimpleAuction {
 
