@@ -17,7 +17,7 @@ interface IClassifiedNFT is INFT {
     function getClassForTokenID(uint256 _tokenID) external view returns (uint256);
     function getClassPropertiesForTokenID(uint256 _tokenID) external view returns (string[] memory);
     function getClassPropertyForTokenID(uint256 _tokenID, uint256 _propertyID) external view returns (string memory);
-    function mintWithClass(address to, uint256 tokenId, uint256 classId)  external;
+    function mintWithClass(address _to, uint256 _tokenId, uint256 _classId)  external;
     function appendClassProperty(uint256 _classID, uint256 _propertyID, string memory _content) external;
 }
 
