@@ -58,6 +58,9 @@ interface INFT {
     function setBid(uint256 _tokenId, bytes calldata _data) payable external; // bid amount is defined by msg.value
     function setPrice(uint256 _tokenId, uint256 _amountInWEI) external;
     function withdrawBid(uint256 _tokenId) external returns (bool);
+
+    function getUserContent(uint256 _tokenId) external view returns (string memory);
+    function setUserContent(uint256 _tokenId, string calldata _content) external returns (bool);
 }
 
 abstract contract NFTReceiver {
@@ -157,6 +160,18 @@ contract NFT is INFT {
     {
         return _tokenProperties[_tokenId];
     }
+
+    function getUserContent(uint256 _tokenId) public view virtual override returns (string memory)
+    {
+        return _tokenProperties[_tokenId].properties[0];
+    }
+
+    function setUserContent(uint256 _tokenId, string calldata _content) public virtual override returns (bool success)
+    {
+        require(msg.sender == ownerOf(_tokenId), "NFT: only owner can change NFT content");
+        _tokenProperties[_tokenId].properties[0] = _content;
+        return true;
+    }
     
     function balanceOf(address owner) public view virtual override returns (uint256) {
         require(owner != address(0), "NFT: balance query for the zero address");
@@ -254,7 +269,6 @@ contract NFT is INFT {
         {
             _tokenProperties[tokenId].properties.push("");
         }
-        
     }
     
     function _mint(address to, uint256 tokenId) internal virtual {
