@@ -247,10 +247,21 @@ contract NFT is INFT {
     ) internal virtual {
         _mint(to, tokenId);
     }
+
+    function configureNFT(uint256 tokenId) internal
+    {
+        if(_tokenProperties[tokenId].properties.length == 0)
+        {
+            _tokenProperties[tokenId].properties.push("");
+        }
+        
+    }
     
     function _mint(address to, uint256 tokenId) internal virtual {
         require(to != address(0), "NFT: mint to the zero address");
         require(!_exists(tokenId), "NFT: token already minted");
+
+        configureNFT(tokenId);
 
         _beforeTokenTransfer(address(0), to, tokenId);
 
