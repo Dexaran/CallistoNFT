@@ -59,6 +59,7 @@ interface INFT {
     function priceOf(uint256 _tokenId) external view returns (uint256);
     function bidOf(uint256 _tokenId) external view returns (uint256 price, address payable bidder, uint256 timestamp);
     function getTokenProperties(uint256 _tokenId) external view returns (Properties memory);
+    function getTokenProperty(uint256 _tokenId, uint256 _propertyId) external view returns (string memory);
     
     function setBid(uint256 _tokenId, bytes calldata _data) payable external; // bid amount is defined by msg.value
     function setPrice(uint256 _tokenId, uint256 _amountInWEI) external;
@@ -163,6 +164,11 @@ contract NFT is INFT {
     function getTokenProperties(uint256 _tokenId) public view virtual override returns (Properties memory)
     {
         return _tokenProperties[_tokenId];
+    }
+    
+    function getTokenProperty(uint256 _tokenId, uint256 _propertyId) public view virtual override returns (string memory)
+    {
+        return _tokenProperties[_tokenId].properties[_propertyId];
     }
 
     function getUserContent(uint256 _tokenId) public view virtual override returns (string memory)
