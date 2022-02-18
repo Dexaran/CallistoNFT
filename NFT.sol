@@ -26,6 +26,11 @@ library Address {
 }
 
 interface INFT {
+
+    event NewBid       (uint256 indexed tokenID, uint256 indexed bidAmount, bytes bidData);
+    event TokenTrade   (uint256 indexed tokenID, address indexed new_owner, address indexed previous_owner, uint256 priceInWEI);
+    event Transfer     (address indexed from, address indexed to, uint256 indexed tokenId);
+    event TransferData (bytes data);
     
     struct Properties {
         
@@ -70,10 +75,6 @@ abstract contract NFTReceiver {
 contract NFT is INFT {
     
     using Address for address;
-
-    event NewBid       (uint256 indexed tokenID, uint256 indexed bidAmount, bytes bidData);
-    event Transfer     (address indexed from, address indexed to, uint256 indexed tokenId);
-    event TransferData (bytes data);
     
     mapping (uint256 => Properties) private _tokenProperties;
     mapping (uint32 => Fee)         public feeLevels; // level # => (fee receiver, fee percentage)
@@ -126,6 +127,9 @@ contract NFT is INFT {
         if(priceOf(_tokenId) > 0 && priceOf(_tokenId) <= _bid)
         {
             uint256 _reward = _bid - _claimFee(_bid, _tokenId);
+
+            emit TokenTrade(_tokenId, _bidder, ownerOf(_tokenId), _reward);
+
             payable(ownerOf(_tokenId)).transfer(_reward);
             delete _bids[_tokenId];
             delete _asks[_tokenId];
