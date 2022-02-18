@@ -25,7 +25,7 @@ library Address {
     }
 }
 
-interface INFT {
+interface ICallistoNFT {
 
     event NewBid       (uint256 indexed tokenID, uint256 indexed bidAmount, bytes bidData);
     event TokenTrade   (uint256 indexed tokenID, address indexed new_owner, address indexed previous_owner, uint256 priceInWEI);
@@ -73,7 +73,7 @@ abstract contract NFTReceiver {
     function nftReceived(address _from, uint256 _tokenId, bytes calldata _data) external virtual;
 }
 
-contract NFT is INFT {
+contract CallistoNFT is ICallistoNFT {
     
     using Address for address;
     
@@ -296,7 +296,7 @@ contract NFT is INFT {
     }
     
     function _burn(uint256 tokenId) internal virtual {
-        address owner = NFT.ownerOf(tokenId);
+        address owner = CallistoNFT.ownerOf(tokenId);
 
         _beforeTokenTransfer(owner, address(0), tokenId);
         
@@ -312,7 +312,7 @@ contract NFT is INFT {
         address to,
         uint256 tokenId
     ) internal virtual {
-        require(NFT.ownerOf(tokenId) == from, "NFT: transfer of token that is not own");
+        require(CallistoNFT.ownerOf(tokenId) == from, "NFT: transfer of token that is not own");
         require(to != address(0), "NFT: transfer to the zero address");
         
         _asks[tokenId] = 0; // Zero out price on transfer
