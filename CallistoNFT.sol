@@ -203,16 +203,35 @@ contract CallistoNFT is ICallistoNFT {
     {
         (uint256 _previousBid, address payable _previousBidder, ) = bidOf(_tokenId);
         require(msg.value > _previousBid, "New bid must exceed the existing one");
+
+        uint256 _bid;
         
         // Return previous bid if the current one exceeds it.
         if(_previousBid != 0)
         {
             _previousBidder.transfer(_previousBid);
         }
-        _bids[_tokenId].amountInWEI = msg.value;
+        // Refund overpaid amount.
+        if (priceOf(_tokenId) < msg.value)
+        {
+            _bid = priceOf(_tokenId);
+        }
+        else
+        {
+            _bid = msg.value;
+        }
+        _bids[_tokenId].amountInWEI = _bid;
         _bids[_tokenId].bidder      = payable(msg.sender);
         _bids[_tokenId].timestamp   = block.timestamp;
-        emit NewBid(_tokenId, msg.value, _data);
+
+        emit NewBid(_tokenId, _bid, _data);
+        
+        // Send back overpaid amount.
+        // WARHNING: Creates possibility for reentrancy.
+        if (priceOf(_tokenId) < msg.value)
+        {
+            payable(msg.sender).transfer(msg.value - priceOf(_tokenId));
+        }
     }
     
     function withdrawBid(uint256 _tokenId) public virtual override returns (bool)
