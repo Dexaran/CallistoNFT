@@ -65,7 +65,7 @@ interface ICallistoNFT {
     function setPrice(uint256 _tokenId, uint256 _amountInWEI) external;
     function withdrawBid(uint256 _tokenId) external returns (bool);
 
-    function getUserContent(uint256 _tokenId) external view returns (string memory);
+    function getUserContent(uint256 _tokenId) external view returns (string memory _content, bool _all);
     function setUserContent(uint256 _tokenId, string calldata _content) external returns (bool);
 }
 
@@ -171,9 +171,9 @@ contract CallistoNFT is ICallistoNFT {
         return _tokenProperties[_tokenId].properties[_propertyId];
     }
 
-    function getUserContent(uint256 _tokenId) public view virtual override returns (string memory)
+    function getUserContent(uint256 _tokenId) public view virtual override returns (string memory _content, bool _all)
     {
-        return _tokenProperties[_tokenId].properties[0];
+        return (_tokenProperties[_tokenId].properties[0], true);
     }
 
     function setUserContent(uint256 _tokenId, string calldata _content) public virtual override returns (bool success)
