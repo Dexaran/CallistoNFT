@@ -143,7 +143,7 @@ contract CallistoNFT is ICallistoNFT {
     
     function standard() public view virtual override returns (string memory)
     {
-        return "NFT X";
+        return "ERC4831";
     }
     
     function priceOf(uint256 _tokenId) public view virtual override returns (uint256)
