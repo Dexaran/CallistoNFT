@@ -70,7 +70,7 @@ interface ICallistoNFT {
 }
 
 abstract contract NFTReceiver {
-    function nftReceived(address _from, uint256 _tokenId, bytes calldata _data) external virtual;
+    function onERC721Received(address _operator, address _from, uint256 _tokenId, bytes calldata _data) external virtual returns(bytes4);
 }
 
 contract CallistoNFT is ICallistoNFT {
@@ -121,6 +121,7 @@ contract CallistoNFT is ICallistoNFT {
         feeLevels[0].feePercentage = _defaultFee;
     }
     
+    // Reward is always paid based on BID
     modifier checkTrade(uint256 _tokenId)
     {
         _;
@@ -132,13 +133,11 @@ contract CallistoNFT is ICallistoNFT {
             emit TokenTrade(_tokenId, _bidder, ownerOf(_tokenId), _reward);
 
             payable(ownerOf(_tokenId)).transfer(_reward);
+
+            bytes calldata _empty;
             delete _bids[_tokenId];
             delete _asks[_tokenId];
-            _transfer(ownerOf(_tokenId), _bidder, _tokenId);
-            if(address(_bidder).isContract())
-            {
-                NFTReceiver(_bidder).nftReceived(ownerOf(_tokenId), _tokenId, hex"000000");
-            }
+            _transfer(ownerOf(_tokenId), _bidder, _tokenId, _empty);
         }
     }
     
@@ -255,18 +254,34 @@ contract CallistoNFT is ICallistoNFT {
     
     function transfer(address _to, uint256 _tokenId, bytes calldata _data) public override returns (bool)
     {
-        _transfer(msg.sender, _to, _tokenId);
-        if(_to.isContract())
-        {
-            NFTReceiver(_to).nftReceived(msg.sender, _tokenId, _data);
-        }
+        _transfer(msg.sender, _to, _tokenId, _data);
         emit TransferData(_data);
         return true;
     }
     
     function silentTransfer(address _to, uint256 _tokenId) public override returns (bool)
     {
-        _transfer(msg.sender, _to, _tokenId);
+        require(CallistoNFT.ownerOf(_tokenId) == msg.sender, "NFT: transfer of token that is not own");
+        require(_to != address(0), "NFT: transfer to the zero address");
+        
+        _asks[_tokenId] = 0; // Zero out price on transfer
+        
+        // When a user transfers the NFT to another user
+        // it does not automatically mean that the new owner
+        // would like to sell this NFT at a price
+        // specified by the previous owner.
+        
+        // However bids persist regardless of token transfers
+        // because we assume that the bidder still wants to buy the NFT
+        // no matter from whom.
+
+        _beforeTokenTransfer(msg.sender, _to, _tokenId);
+
+        _balances[msg.sender] -= 1;
+        _balances[_to] += 1;
+        _owners[_tokenId] = _to;
+
+        emit Transfer(msg.sender, _to, _tokenId);
         return true;
     }
     
@@ -329,7 +344,8 @@ contract CallistoNFT is ICallistoNFT {
     function _transfer(
         address from,
         address to,
-        uint256 tokenId
+        uint256 tokenId,
+        bytes calldata data
     ) internal virtual {
         require(CallistoNFT.ownerOf(tokenId) == from, "NFT: transfer of token that is not own");
         require(to != address(0), "NFT: transfer to the zero address");
@@ -350,6 +366,11 @@ contract CallistoNFT is ICallistoNFT {
         _balances[from] -= 1;
         _balances[to] += 1;
         _owners[tokenId] = to;
+
+        if(to.isContract())
+        {
+            NFTReceiver(to).onERC721Received(msg.sender, msg.sender, tokenId, data);
+        }
 
         emit Transfer(from, to, tokenId);
     }
