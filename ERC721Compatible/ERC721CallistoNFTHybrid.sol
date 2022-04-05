@@ -809,6 +809,9 @@ contract CallistoNFT is ICallistoNFT {
         // because we assume that the bidder still wants to buy the NFT
         // no matter from whom.
 
+        // Clear approvals from the previous owner
+        _approve(address(0), tokenId);
+
         _beforeTokenTransfer(from, to, tokenId);
 
         _balances[from] -= 1;
