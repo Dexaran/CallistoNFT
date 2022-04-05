@@ -381,7 +381,7 @@ contract CallistoNFT is ICallistoNFT {
             bytes memory _empty = hex"00000000";
             delete _bids[_tokenId];
             delete _asks[_tokenId];
-            _transfer(ownerOf(_tokenId), _bidder, _tokenId, _empty);
+            _safeTransfer(ownerOf(_tokenId), _bidder, _tokenId, _empty);
         }
     }
     
@@ -485,7 +485,7 @@ contract CallistoNFT is ICallistoNFT {
         require(_isApprovedOrOwner(msg.sender, tokenId), "ERC721: transfer caller is not owner nor approved");
         
         bytes memory _empty = hex"00000000";
-        _transfer(from, to, tokenId, _empty);
+        _safeTransfer(from, to, tokenId, _empty);
     }
 
     /**
@@ -539,7 +539,7 @@ contract CallistoNFT is ICallistoNFT {
         
         bytes memory _empty = hex"00000000";
         _transfer(from, to, tokenId, _empty);
-        require(_checkOnERC721Received(from, to, tokenId, _data), "ERC721: transfer to non ERC721Receiver implementer");
+        require(_checkOnERC721Received(from, to, tokenId, _data), "NFT: transfer to non ERC721Receiver implementer");
     }
 
     /**
@@ -702,7 +702,7 @@ contract CallistoNFT is ICallistoNFT {
     
     function transfer(address _to, uint256 _tokenId, bytes calldata _data) public override returns (bool)
     {
-        _transfer(msg.sender, _to, _tokenId, _data);
+        _safeTransfer(msg.sender, _to, _tokenId, _data);
         emit TransferData(_data);
         return true;
     }
@@ -815,10 +815,10 @@ contract CallistoNFT is ICallistoNFT {
         _balances[to] += 1;
         _owners[tokenId] = to;
 
-        if(to.isContract())
+        /* if(to.isContract())
         {
-            NFTReceiver(to).onERC721Received(msg.sender, msg.sender, tokenId, data);
-        }
+            NFTReceiver(to).onERC721Received(msg.sender, from, tokenId, data);
+        } */
 
         emit Transfer(from, to, tokenId);
     }
