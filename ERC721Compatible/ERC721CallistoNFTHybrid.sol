@@ -149,7 +149,9 @@ interface IERC721 is IERC165 {
      * See {setApprovalForAll}
      */
     function isApprovedForAll(address owner, address operator) external view returns (bool);
-}library Strings {
+}
+
+library Strings {
     bytes16 private constant _HEX_SYMBOLS = "0123456789abcdef";
 
     /**
