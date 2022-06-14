@@ -3,10 +3,10 @@
 pragma solidity ^0.8.0;
 
 //import "../Libraries/Address.sol"; **Address is declared on NFT.sol"
-import "../Libraries/Strings.sol";
-import "../NFT.sol";
+import "https://github.com/Dexaran/CallistoNFT/blob/main/Libraries/Strings.sol";
+import "https://github.com/Dexaran/CallistoNFT/blob/main/CallistoNFT.sol";
 
-interface IClassifiedNFT is INFT {
+interface IClassifiedNFT is ICallistoNFT  {
     function setClassForTokenID(uint256 _tokenID, uint256 _tokenClass) external;
     function addNewTokenClass() external;
     function addTokenClassProperties(uint256 _propertiesCount) external;
@@ -25,7 +25,7 @@ interface IClassifiedNFT is INFT {
  * @title CallistoNFT Classified NFT
  * @dev This extension adds propeties to NFTs based on classes.
  */
-abstract contract ClassifiedNFT is NFT, IClassifiedNFT {
+abstract contract ClassifiedNFT is CallistoNFT, IClassifiedNFT {
     using Strings for string;
 
     mapping (uint256 => string[]) public class_properties;
@@ -39,18 +39,18 @@ abstract contract ClassifiedNFT is NFT, IClassifiedNFT {
         _;
     }
 
-    function setClassForTokenID(uint256 _tokenID, uint256 _tokenClass) public /* onlyOwner */
+    function setClassForTokenID(uint256 _tokenID, uint256 _tokenClass) public override /* onlyOwner */
     {
         token_classes[_tokenID] = _tokenClass;
     }
 
-    function addNewTokenClass() public /* onlyOwner */
+    function addNewTokenClass() public override /* onlyOwner */
     {
         class_properties[nextClassIndex].push("");
         nextClassIndex++;
     }
 
-    function addTokenClassProperties(uint256 _propertiesCount) public /* onlyOwner */
+    function addTokenClassProperties(uint256 _propertiesCount) public override /* onlyOwner */
     {
         for (uint i = 0; i < _propertiesCount; i++)
         {
@@ -58,48 +58,48 @@ abstract contract ClassifiedNFT is NFT, IClassifiedNFT {
         }
     }
 
-    function modifyClassProperty(uint256 _classID, uint256 _propertyID, string memory _content) public /* onlyOwner */ onlyExistingClasses(_classID)
+    function modifyClassProperty(uint256 _classID, uint256 _propertyID, string memory _content) public override /* onlyOwner */ onlyExistingClasses(_classID)
     {
         class_properties[_classID][_propertyID] = _content;
     }
 
-    function getClassProperty(uint256 _classID, uint256 _propertyID) public view onlyExistingClasses(_classID) returns (string memory)
+    function getClassProperty(uint256 _classID, uint256 _propertyID) public override view onlyExistingClasses(_classID) returns (string memory)
     {
         return class_properties[_classID][_propertyID];
     }
 
-    function addClassProperty(uint256 _classID) public /* onlyOwner */ onlyExistingClasses(_classID)
+    function addClassProperty(uint256 _classID) public override /* onlyOwner */ onlyExistingClasses(_classID)
     {
         class_properties[_classID].push("");
     }
 
-    function getClassProperties(uint256 _classID) public view onlyExistingClasses(_classID) returns (string[] memory)
+    function getClassProperties(uint256 _classID) public override view onlyExistingClasses(_classID) returns (string[] memory)
     {
         return class_properties[_classID];
     }
 
-    function getClassForTokenID(uint256 _tokenID) public view onlyExistingClasses(token_classes[_tokenID]) returns (uint256)
+    function getClassForTokenID(uint256 _tokenID) public override view onlyExistingClasses(token_classes[_tokenID]) returns (uint256)
     {
         return token_classes[_tokenID];
     }
 
-    function getClassPropertiesForTokenID(uint256 _tokenID) public view onlyExistingClasses(token_classes[_tokenID]) returns (string[] memory)
+    function getClassPropertiesForTokenID(uint256 _tokenID) public override view onlyExistingClasses(token_classes[_tokenID]) returns (string[] memory)
     {
         return class_properties[token_classes[_tokenID]];
     }
 
-    function getClassPropertyForTokenID(uint256 _tokenID, uint256 _propertyID) public view onlyExistingClasses(token_classes[_tokenID]) returns (string memory)
+    function getClassPropertyForTokenID(uint256 _tokenID, uint256 _propertyID) public override view onlyExistingClasses(token_classes[_tokenID]) returns (string memory)
     {
         return class_properties[token_classes[_tokenID]][_propertyID];
     }
     
-    function mintWithClass(address to, uint256 tokenId, uint256 classId)  public /* onlyOwner */ onlyExistingClasses(classId)
+    function mintWithClass(address to, uint256 tokenId, uint256 classId)  public override /* onlyOwner */ onlyExistingClasses(classId)
     {
         _mint(to, tokenId);
         token_classes[tokenId] = classId;
     }
 
-    function appendClassProperty(uint256 _classID, uint256 _propertyID, string memory _content) public /* onlyOwner */ onlyExistingClasses(_classID)
+    function appendClassProperty(uint256 _classID, uint256 _propertyID, string memory _content) public override /* onlyOwner */ onlyExistingClasses(_classID)
     {
         class_properties[_classID][_propertyID] = class_properties[_classID][_propertyID].concat(_content);
     }
