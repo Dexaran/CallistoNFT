@@ -73,7 +73,7 @@ abstract contract NFTReceiver {
     function onERC721Received(address _operator, address _from, uint256 _tokenId, bytes calldata _data) external virtual returns(bytes4);
 }
 
-contract CallistoNFT is ICallistoNFT {
+abstract contract CallistoNFT is ICallistoNFT {
     
     using Address for address;
     
