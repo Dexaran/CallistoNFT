@@ -100,10 +100,10 @@ abstract contract CallistoNFT is ICallistoNFT {
     mapping (uint256 => uint32)  private _tokenFeeLevels; // tokenID => level ID / 0 by default
 
     // Token name
-    string private _name;
+    string internal _name;
 
     // Token symbol
-    string private _symbol;
+    string internal _symbol;
 
     // Mapping from token ID to owner address
     mapping(uint256 => address) private _owners;
