@@ -141,64 +141,64 @@ abstract contract CallistoNFT is ICallistoNFT {
         }
     }
     
-    function standard() public view virtual override returns (string memory)
+    function standard() public pure override returns (string memory)
     {
         return "CallistoNFT";
     }
     
-    function priceOf(uint256 _tokenId) public view virtual override returns (uint256)
+    function priceOf(uint256 _tokenId) public view override returns (uint256)
     {
         address owner = _owners[_tokenId];
         require(owner != address(0), "NFT: owner query for nonexistent token");
         return _asks[_tokenId];
     }
     
-    function bidOf(uint256 _tokenId) public view virtual override returns (uint256 price, address payable bidder, uint256 timestamp)
+    function bidOf(uint256 _tokenId) public view override returns (uint256 price, address payable bidder, uint256 timestamp)
     {
         address owner = _owners[_tokenId];
         require(owner != address(0), "NFT: owner query for nonexistent token");
         return (_bids[_tokenId].amountInWEI, _bids[_tokenId].bidder, _bids[_tokenId].timestamp);
     }
     
-    function getTokenProperties(uint256 _tokenId) public view virtual override returns (Properties memory)
+    function getTokenProperties(uint256 _tokenId) public view override returns (Properties memory)
     {
         return _tokenProperties[_tokenId];
     }
     
-    function getTokenProperty(uint256 _tokenId, uint256 _propertyId) public view virtual override returns (string memory)
+    function getTokenProperty(uint256 _tokenId, uint256 _propertyId) public view override returns (string memory)
     {
         return _tokenProperties[_tokenId].properties[_propertyId];
     }
 
-    function getUserContent(uint256 _tokenId) public view virtual override returns (string memory _content, bool _all)
+    function getUserContent(uint256 _tokenId) public view override returns (string memory _content, bool _all)
     {
         return (_tokenProperties[_tokenId].properties[0], true);
     }
 
-    function setUserContent(uint256 _tokenId, string calldata _content) public virtual override returns (bool success)
+    function setUserContent(uint256 _tokenId, string calldata _content) public override returns (bool success)
     {
         require(msg.sender == ownerOf(_tokenId), "NFT: only owner can change NFT content");
         _tokenProperties[_tokenId].properties[0] = _content;
         return true;
     }
     
-    function balanceOf(address owner) public view virtual override returns (uint256) {
+    function balanceOf(address owner) public view override returns (uint256) {
         require(owner != address(0), "NFT: balance query for the zero address");
         return _balances[owner];
     }
     
-    function ownerOf(uint256 tokenId) public view virtual override returns (address) {
+    function ownerOf(uint256 tokenId) public view override returns (address) {
         address owner = _owners[tokenId];
         require(owner != address(0), "NFT: owner query for nonexistent token");
         return owner;
     }
     
-    function setPrice(uint256 _tokenId, uint256 _amountInWEI) checkTrade(_tokenId) public virtual override {
+    function setPrice(uint256 _tokenId, uint256 _amountInWEI) checkTrade(_tokenId) public override {
         require(ownerOf(_tokenId) == msg.sender, "Setting asks is only allowed for owned NFTs!");
         _asks[_tokenId] = _amountInWEI;
     }
     
-    function setBid(uint256 _tokenId, bytes calldata _data) payable checkTrade(_tokenId) public virtual override
+    function setBid(uint256 _tokenId, bytes calldata _data) payable checkTrade(_tokenId) public override
     {
         (uint256 _previousBid, address payable _previousBidder, ) = bidOf(_tokenId);
         require(msg.value > _previousBid, "New bid must exceed the existing one");
@@ -233,7 +233,7 @@ abstract contract CallistoNFT is ICallistoNFT {
         }
     }
     
-    function withdrawBid(uint256 _tokenId) public virtual override returns (bool)
+    function withdrawBid(uint256 _tokenId) public override returns (bool)
     {
         (uint256 _bid, address payable _bidder, uint256 _timestamp) = bidOf(_tokenId);
         require(msg.sender == _bidder, "Can not withdraw someone elses bid");
@@ -244,11 +244,11 @@ abstract contract CallistoNFT is ICallistoNFT {
         return true;
     }
     
-    function name() public view virtual override returns (string memory) {
+    function name() public view override returns (string memory) {
         return _name;
     }
     
-    function symbol() public view virtual override returns (string memory) {
+    function symbol() public view override returns (string memory) {
         return _symbol;
     }
     
@@ -285,7 +285,7 @@ abstract contract CallistoNFT is ICallistoNFT {
         return true;
     }
     
-    function _exists(uint256 tokenId) internal view virtual returns (bool) {
+    function _exists(uint256 tokenId) internal view returns (bool) {
         return _owners[tokenId] != address(0);
     }
     
@@ -315,7 +315,7 @@ abstract contract CallistoNFT is ICallistoNFT {
         }
     }
     
-    function _mint(address to, uint256 tokenId) internal virtual {
+    function _mint(address to, uint256 tokenId) internal {
         require(to != address(0), "NFT: mint to the zero address");
         require(!_exists(tokenId), "NFT: token already minted");
 
@@ -329,7 +329,7 @@ abstract contract CallistoNFT is ICallistoNFT {
         emit Transfer(address(0), to, tokenId);
     }
     
-    function _burn(uint256 tokenId) internal virtual {
+    function _burn(uint256 tokenId) internal {
         address owner = CallistoNFT.ownerOf(tokenId);
 
         _beforeTokenTransfer(owner, address(0), tokenId);
@@ -346,7 +346,7 @@ abstract contract CallistoNFT is ICallistoNFT {
         address to,
         uint256 tokenId,
         bytes calldata data
-    ) internal virtual {
+    ) internal {
         require(CallistoNFT.ownerOf(tokenId) == from, "NFT: transfer of token that is not own");
         require(to != address(0), "NFT: transfer to the zero address");
         
