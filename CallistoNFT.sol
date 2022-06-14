@@ -77,7 +77,7 @@ abstract contract CallistoNFT is ICallistoNFT {
     
     using Address for address;
     
-    mapping (uint256 => Properties) private _tokenProperties;
+    mapping (uint256 => Properties) internal _tokenProperties;
     mapping (uint32 => Fee)         public feeLevels; // level # => (fee receiver, fee percentage)
     
     uint256 public bidLock = 1 days; // Time required for a bid to become withdrawable.
@@ -95,9 +95,9 @@ abstract contract CallistoNFT is ICallistoNFT {
                                // feePercentage of 2500 means 2.5% fee
     }
     
-    mapping (uint256 => uint256) private _asks; // tokenID => price of this token (in WEI)
-    mapping (uint256 => Bid)     private _bids; // tokenID => price of this token (in WEI)
-    mapping (uint256 => uint32)  private _tokenFeeLevels; // tokenID => level ID / 0 by default
+    mapping (uint256 => uint256) internal _asks; // tokenID => price of this token (in WEI)
+    mapping (uint256 => Bid)     internal _bids; // tokenID => price of this token (in WEI)
+    mapping (uint256 => uint32)  internal _tokenFeeLevels; // tokenID => level ID / 0 by default
 
     // Token name
     string internal _name;
@@ -106,10 +106,10 @@ abstract contract CallistoNFT is ICallistoNFT {
     string internal _symbol;
 
     // Mapping from token ID to owner address
-    mapping(uint256 => address) private _owners;
+    mapping(uint256 => address) internal _owners;
 
     // Mapping owner address to token count
-    mapping(address => uint256) private _balances;
+    mapping(address => uint256) internal _balances;
 
     /**
      * @dev Initializes the contract by setting a `name` and a `symbol` to the token collection.
