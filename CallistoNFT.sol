@@ -134,10 +134,10 @@ abstract contract CallistoNFT is ICallistoNFT {
 
             payable(ownerOf(_tokenId)).transfer(_reward);
 
-            bytes calldata _empty;
+            bytes memory _empty;
             delete _bids[_tokenId];
             delete _asks[_tokenId];
-            _transfer(ownerOf(_tokenId), _bidder, _tokenId, _empty);
+            _transfer(ownerOf(_tokenId), _bidder, _tokenId, _empty );
         }
     }
     
@@ -252,7 +252,7 @@ abstract contract CallistoNFT is ICallistoNFT {
         return _symbol;
     }
     
-    function transfer(address _to, uint256 _tokenId, bytes calldata _data) public override returns (bool)
+    function transfer(address _to, uint256 _tokenId, bytes memory _data) public override returns (bool)
     {
         _transfer(msg.sender, _to, _tokenId, _data);
         emit TransferData(_data);
@@ -345,7 +345,7 @@ abstract contract CallistoNFT is ICallistoNFT {
         address from,
         address to,
         uint256 tokenId,
-        bytes calldata data
+        bytes memory data
     ) internal {
         require(CallistoNFT.ownerOf(tokenId) == from, "NFT: transfer of token that is not own");
         require(to != address(0), "NFT: transfer to the zero address");
