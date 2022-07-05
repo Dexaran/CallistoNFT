@@ -25,7 +25,7 @@ library Address {
     }
 }
 
-interface INFT {
+interface ICallistoNFT {
     
     struct Properties {
         
@@ -66,7 +66,7 @@ abstract contract NFTReceiver {
 
 // ExtendedNFT is a version of the CallistoNFT standard token
 // that implements a set of function for NFT content management
-contract ExtendedNFT is INFT {
+contract ExtendedNFT is ICallistoNFT {
     using Address for address;
     
     event NewBid       (uint256 indexed tokenID, uint256 indexed bidAmount, bytes bidData);

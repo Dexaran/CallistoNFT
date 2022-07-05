@@ -2,12 +2,11 @@
 
 pragma solidity ^0.8.12;
 
-import "../Libraries/Strings.sol";
-import "../NFT.sol";
+import "https://github.com/Dexaran/CallistoNFT/blob/main/CallistoNFT.sol";
 
 // ExtendedNFT is a version of the CallistoNFT standard token
 // that implements a set of function for NFT content management
-contract ExtendedNFT is INFT {
+contract ExtendedNFT is ICallistoNFT {
     using Address for address;
     
     event NewBid       (uint256 indexed tokenID, uint256 indexed bidAmount, bytes bidData);

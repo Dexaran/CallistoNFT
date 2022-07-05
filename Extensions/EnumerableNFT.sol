@@ -2,10 +2,9 @@
 
 pragma solidity ^0.8.0;
 
-//import "../Libraries/Address.sol"; **Address is declared on NFT.sol"
-import "../NFT.sol";
+import "https://github.com/Dexaran/CallistoNFT/blob/main/CallistoNFT.sol";
 
-interface IEnumerableNFT is INFT {
+interface IEnumerableNFT is ICallistoNFT {
     /**
      * @dev Returns the total amount of tokens stored by the contract.
      */
@@ -24,7 +23,7 @@ interface IEnumerableNFT is INFT {
     function tokenByIndex(uint256 index) external view returns (uint256);
 }
 
-abstract contract EnumerableNFT is NFT, IEnumerableNFT {
+abstract contract EnumerableNFT is CallistoNFT, IEnumerableNFT {
     // Mapping from owner to list of owned token IDs
     mapping(address => mapping(uint256 => uint256)) private _ownedTokens;
 
@@ -38,7 +37,7 @@ abstract contract EnumerableNFT is NFT, IEnumerableNFT {
     mapping(uint256 => uint256) private _allTokensIndex;
 
     function tokenOfOwnerByIndex(address owner, uint256 index) public view virtual override returns (uint256) {
-        require(index < NFT.balanceOf(owner), "NFT: owner index out of bounds");
+        require(index < CallistoNFT.balanceOf(owner), "NFT: owner index out of bounds");
         return _ownedTokens[owner][index];
     }
 
@@ -91,7 +90,7 @@ abstract contract EnumerableNFT is NFT, IEnumerableNFT {
      * @param tokenId uint256 ID of the token to be added to the tokens list of the given address
      */
     function _addTokenToOwnerEnumeration(address to, uint256 tokenId) private {
-        uint256 length = NFT.balanceOf(to);
+        uint256 length = CallistoNFT.balanceOf(to);
         _ownedTokens[to][length] = tokenId;
         _ownedTokensIndex[tokenId] = length;
     }
@@ -117,7 +116,7 @@ abstract contract EnumerableNFT is NFT, IEnumerableNFT {
         // To prevent a gap in from's tokens array, we store the last token in the index of the token to delete, and
         // then delete the last slot (swap and pop).
 
-        uint256 lastTokenIndex = NFT.balanceOf(from) - 1;
+        uint256 lastTokenIndex = CallistoNFT.balanceOf(from) - 1;
         uint256 tokenIndex = _ownedTokensIndex[tokenId];
 
         // When the token to delete is the last token, the swap operation is unnecessary

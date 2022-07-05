@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.12;
 
-import "../CallistoNFT.sol";
+import "https://github.com/Dexaran/CallistoNFT/blob/main/CallistoNFT.sol";
 
 interface IClassifiedNFT is ICallistoNFT  {
     function setClassForTokenID(uint256 _tokenID, uint256 _tokenClass) external;

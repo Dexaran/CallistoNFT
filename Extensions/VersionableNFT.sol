@@ -2,10 +2,9 @@
 
 pragma solidity ^0.8.0;
 
-//import "../Libraries/Address.sol"; **Address is declared on NFT.sol"
-import "../NFT.sol";
+import "https://github.com/Dexaran/CallistoNFT/blob/main/CallistoNFT.sol";
 
-abstract contract VersionableNFT is NFT{
+abstract contract VersionableNFT is CallistoNFT{
     uint256 public relevantVersion = 1;
 
     mapping (uint256 => uint256) public token_versions;

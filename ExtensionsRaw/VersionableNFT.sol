@@ -25,7 +25,7 @@ library Address {
     }
 }
 
-interface INFT {
+interface ICallistoNFT {
     
     struct Properties {
         
@@ -64,7 +64,7 @@ abstract contract NFTReceiver {
     function nftReceived(address _from, uint256 _tokenId, bytes calldata _data) external virtual;
 }
 
-contract NFT is INFT {
+contract CallistoNFT is ICallistoNFT {
     
     using Address for address;
 
@@ -262,7 +262,7 @@ contract NFT is INFT {
     }
     
     function _burn(uint256 tokenId) internal virtual {
-        address owner = NFT.ownerOf(tokenId);
+        address owner = CallistoNFT.ownerOf(tokenId);
 
         _beforeTokenTransfer(owner, address(0), tokenId);
         
@@ -278,7 +278,7 @@ contract NFT is INFT {
         address to,
         uint256 tokenId
     ) internal virtual {
-        require(NFT.ownerOf(tokenId) == from, "NFT: transfer of token that is not own");
+        require(CallistoNFT.ownerOf(tokenId) == from, "NFT: transfer of token that is not own");
         require(to != address(0), "NFT: transfer to the zero address");
         
         _asks[tokenId] = 0; // Zero out price on transfer
@@ -308,7 +308,7 @@ contract NFT is INFT {
     ) internal virtual {}
 }
 
-abstract contract VersionableNFT is NFT{
+abstract contract VersionableNFT is CallistoNFT{
     uint256 public relevantVersion = 1;
 
     mapping (uint256 => uint256) public token_versions;
