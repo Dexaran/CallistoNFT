@@ -1,10 +1,8 @@
 // SPDX-License-Identifier: GPL
 
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.12;
 
-//import "../Libraries/Address.sol"; **Address is declared on NFT.sol"
-import "https://github.com/Dexaran/CallistoNFT/blob/main/Libraries/Strings.sol";
-import "https://github.com/Dexaran/CallistoNFT/blob/main/CallistoNFT.sol";
+import "../CallistoNFT.sol";
 
 interface IClassifiedNFT is ICallistoNFT  {
     function setClassForTokenID(uint256 _tokenID, uint256 _tokenClass) external;
@@ -26,7 +24,6 @@ interface IClassifiedNFT is ICallistoNFT  {
  * @dev This extension adds propeties to NFTs based on classes.
  */
 abstract contract ClassifiedNFT is CallistoNFT, IClassifiedNFT {
-    using Strings for string;
 
     mapping (uint256 => string[]) public class_properties;
     mapping (uint256 => uint256)  public token_classes;
@@ -101,6 +98,6 @@ abstract contract ClassifiedNFT is CallistoNFT, IClassifiedNFT {
 
     function appendClassProperty(uint256 _classID, uint256 _propertyID, string memory _content) public override /* onlyOwner */ onlyExistingClasses(_classID)
     {
-        class_properties[_classID][_propertyID] = class_properties[_classID][_propertyID].concat(_content);
+        class_properties[_classID][_propertyID] = string.concat(class_properties[_classID][_propertyID], _content);
     }
 }

@@ -1,15 +1,13 @@
 // SPDX-License-Identifier: GPL
 
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.12;
 
-//import "../Libraries/Address.sol"; **Address is declared on NFT.sol"
 import "../Libraries/Strings.sol";
 import "../NFT.sol";
 
 // ExtendedNFT is a version of the CallistoNFT standard token
 // that implements a set of function for NFT content management
 contract ExtendedNFT is INFT {
-    using Strings for string;
     using Address for address;
     
     event NewBid       (uint256 indexed tokenID, uint256 indexed bidAmount, bytes bidData);
@@ -120,7 +118,7 @@ contract ExtendedNFT is INFT {
 
     function appendProperty(uint256 _tokenId, uint256 _propertyId, string calldata _content) public /* onlyOwner or onlyTokenOwner*/
     {
-        _tokenProperties[_tokenId].properties[_propertyId] = _tokenProperties[_tokenId].properties[_propertyId].concat(_content);
+        _tokenProperties[_tokenId].properties[_propertyId] = string.concat(_tokenProperties[_tokenId].properties[_propertyId], _content);
     }
     
     function balanceOf(address owner) public view virtual override returns (uint256) {
