@@ -47,11 +47,11 @@ abstract contract ClassifiedNFT is CallistoNFT, IClassifiedNFT {
         nextClassIndex++;
     }
 
-    function addTokenClassProperties(uint256 _propertiesCount) public override /* onlyOwner */
+    function addTokenClassProperties(uint256 _classId, uint256 _propertiesCount) public override /* onlyOwner */
     {
         for (uint i = 0; i < _propertiesCount; i++)
         {
-            class_properties[nextClassIndex].push("");
+            class_properties[_classId].push("");
         }
     }
 
