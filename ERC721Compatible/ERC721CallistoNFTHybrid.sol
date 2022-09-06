@@ -777,6 +777,21 @@ contract CallistoNFT is ICallistoNFT {
         emit Transfer(address(0), to, tokenId);
     }
     
+    function _mint(address to, uint256 tokenId, uint32 feeLevel) internal virtual {
+        require(to != address(0), "NFT: mint to the zero address");
+        require(!_exists(tokenId), "NFT: token already minted");
+
+        configureNFT(tokenId);
+        _tokenFeeLevels[tokenId] = feeLevel;
+
+        _beforeTokenTransfer(address(0), to, tokenId);
+
+        _balances[to] += 1;
+        _owners[tokenId] = to;
+
+        emit Transfer(address(0), to, tokenId);
+    }
+    
     function _burn(uint256 tokenId) internal virtual {
         address owner = CallistoNFT.ownerOf(tokenId);
 
