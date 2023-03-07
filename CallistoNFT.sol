@@ -284,9 +284,28 @@ abstract contract CallistoNFT is ICallistoNFT {
         emit Transfer(msg.sender, _to, _tokenId);
         return true;
     }
-    
-    function _exists(uint256 tokenId) internal view returns (bool) {
-        return _owners[tokenId] != address(0);
+
+    function setTokenProperty(uint256 _tokenId, uint256 _propertyId, string calldata _content) public returns (bool success)
+    {
+        // Access restriction rules must be implemented here.
+        // The implementation depends on the requirements of the tokenomics.
+        // In most cases an "owner" of the contract or NFT class will have a permission to configure its properties.
+
+        _tokenProperties[_tokenId].properties[_propertyId] = _content;
+        return true;
+    }
+
+    function addTokenProperty(uint256 _tokenId, string calldata _content) internal
+    {
+        // Access restriction rules must be implemented here.
+        // The implementation depends on the requirements of the tokenomics.
+        // In most cases an "owner" of the contract or NFT class will have a permission to add new property slots.
+
+        _tokenProperties[_tokenId].properties.push(_content);
+    }
+
+    function _exists(uint256 _tokenId) internal view returns (bool) {
+        return _owners[_tokenId] != address(0);
     }
     
     function _claimFee(uint256 _amountFrom, uint256 _tokenId) internal returns (uint256)
