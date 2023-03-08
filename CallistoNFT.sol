@@ -27,7 +27,8 @@ library Address {
 
 interface ICallistoNFT {
 
-    event NewBid       (uint256 indexed tokenID, uint256 indexed bidAmount, bytes bidData);
+    event NewBid       (uint256 indexed tokenID, uint256 indexed bidAmount, bytes data);
+    event NewPrice     (uint256 indexed tokenID, uint256 indexed priceValue);
     event TokenTrade   (uint256 indexed tokenID, address indexed new_owner, address indexed previous_owner, uint256 priceInWEI);
     event Transfer     (address indexed from, address indexed to, uint256 indexed tokenId);
     event TransferData (bytes data);
@@ -76,6 +77,8 @@ abstract contract NFTReceiver {
 abstract contract CallistoNFT is ICallistoNFT {
     
     using Address for address;
+
+    event TokenPropertyUpdated(uint tokenID, uint propertyID);
     
     mapping (uint256 => Properties) internal _tokenProperties;
     mapping (uint32 => Fee)         public feeLevels; // level # => (fee receiver, fee percentage)
@@ -179,6 +182,7 @@ abstract contract CallistoNFT is ICallistoNFT {
     {
         require(msg.sender == ownerOf(_tokenId), "NFT: only owner can change NFT content");
         _tokenProperties[_tokenId].properties[0] = _content;
+        emit TokenPropertyUpdated(_tokenId, 0) ;
         return true;
     }
     
@@ -196,6 +200,7 @@ abstract contract CallistoNFT is ICallistoNFT {
     function setPrice(uint256 _tokenId, uint256 _amountInWEI) checkTrade(_tokenId) public override {
         require(ownerOf(_tokenId) == msg.sender, "Setting asks is only allowed for owned NFTs!");
         _asks[_tokenId] = _amountInWEI;
+         emit NewPrice(_tokenId, _amountInWEI);
     }
     
     function setBid(uint256 _tokenId, bytes calldata _data) payable checkTrade(_tokenId) public override
@@ -241,6 +246,7 @@ abstract contract CallistoNFT is ICallistoNFT {
         
         _bidder.transfer(_bid);
         delete _bids[_tokenId];
+        emit NewBid(_tokenId, 0, "0x7769746864726177426964");
         return true;
     }
     
@@ -292,6 +298,7 @@ abstract contract CallistoNFT is ICallistoNFT {
         // In most cases an "owner" of the contract or NFT class will have a permission to configure its properties.
 
         _tokenProperties[_tokenId].properties[_propertyId] = _content;
+        emit TokenPropertyUpdated(_tokenId, _propertyId);
         return true;
     }
 
@@ -302,6 +309,10 @@ abstract contract CallistoNFT is ICallistoNFT {
         // In most cases an "owner" of the contract or NFT class will have a permission to add new property slots.
 
         _tokenProperties[_tokenId].properties.push(_content);
+        
+        uint newPropertyID = _tokenProperties[_tokenId].properties.length - 1;
+
+        emit TokenPropertyUpdated(_tokenId, newPropertyID);
     }
 
     function _exists(uint256 _tokenId) internal view returns (bool) {
