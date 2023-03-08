@@ -68,7 +68,8 @@ contract CallistoNFT is ICallistoNFT {
     
     using Address for address;
 
-    event NewBid       (uint256 indexed tokenID, uint256 indexed bidAmount, bytes bidData);
+    event NewBid       (uint256 indexed tokenID, uint256 indexed bidAmount, bytes data);
+    event NewPrice     (uint256 indexed tokenID, uint256 indexed priceValue);
     event Transfer     (address indexed from, address indexed to, uint256 indexed tokenId);
     event TransferData (bytes data);
     
@@ -173,6 +174,7 @@ contract CallistoNFT is ICallistoNFT {
     function setPrice(uint256 _tokenId, uint256 _amountInWEI) checkTrade(_tokenId) public virtual override {
         require(ownerOf(_tokenId) == msg.sender, "Setting asks is only allowed for owned NFTs!");
         _asks[_tokenId] = _amountInWEI;
+        emit NewPrice(_tokenId, _amountInWEI);
     }
     
     function setBid(uint256 _tokenId, bytes calldata _data) payable checkTrade(_tokenId) public virtual override
@@ -199,6 +201,7 @@ contract CallistoNFT is ICallistoNFT {
         
         _bidder.transfer(_bid);
         delete _bids[_tokenId];
+        emit NewBid(_tokenId, 0, "0x7769746864726177426964");
         return true;
     }
     

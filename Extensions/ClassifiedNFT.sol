@@ -25,6 +25,9 @@ interface IClassifiedNFT is ICallistoNFT  {
  */
 abstract contract ClassifiedNFT is CallistoNFT, IClassifiedNFT {
 
+    event ClassPropertyUpdated(uint classID, uint propertyID);
+    event TokenClassChanged(uint _tokenID, uint _tokenClass);
+
     mapping (uint256 => string[]) public class_properties;
     mapping (uint256 => uint256)  public token_classes;
 
@@ -58,6 +61,7 @@ abstract contract ClassifiedNFT is CallistoNFT, IClassifiedNFT {
     function modifyClassProperty(uint256 _classID, uint256 _propertyID, string memory _content) public override /* onlyOwner */ onlyExistingClasses(_classID)
     {
         class_properties[_classID][_propertyID] = _content;
+        emit ClassPropertyUpdated(_classID, _propertyID);    
     }
 
     function getClassProperty(uint256 _classID, uint256 _propertyID) public override view onlyExistingClasses(_classID) returns (string memory)

@@ -257,7 +257,8 @@ interface IERC721Metadata is IERC721 {
 
 interface ICallistoNFT is IERC721, IERC721Metadata {
 
-    event NewBid       (uint256 indexed tokenID, uint256 indexed bidAmount, bytes bidData);
+    event NewBid       (uint256 indexed tokenID, uint256 indexed bidAmount, bytes data);
+    event NewPrice     (uint256 indexed tokenID, uint256 indexed priceValue, bytes data);
     event TokenTrade   (uint256 indexed tokenID, address indexed new_owner, address indexed previous_owner, uint256 priceInWEI);
     //event Transfer     (address indexed from, address indexed to, uint256 indexed tokenId); // The event is now defined in IERC721
     event TransferData (bytes data);
@@ -307,6 +308,8 @@ contract CallistoNFT is ICallistoNFT {
     
     using Address for address;
     using Strings for uint256;
+
+    event TokenPropertyUpdated(uint tokenID, uint propertyID);
 
     /****** ERC721 variables ******************************/
 
@@ -627,6 +630,7 @@ contract CallistoNFT is ICallistoNFT {
     {
         require(msg.sender == ownerOf(_tokenId), "NFT: only owner can change NFT content");
         _tokenProperties[_tokenId].properties[0] = _content;
+        emit TokenPropertyUpdated(_tokenId, 0) ;
         return true;
     }
     
@@ -689,6 +693,7 @@ contract CallistoNFT is ICallistoNFT {
         
         _bidder.transfer(_bid);
         delete _bids[_tokenId];
+        emit NewBid(_tokenId, 0, "0x7769746864726177426964");
         return true;
     }
     

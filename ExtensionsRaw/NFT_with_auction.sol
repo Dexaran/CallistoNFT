@@ -69,9 +69,11 @@ abstract contract NFTReceiver {
 contract ExtendedNFT is ICallistoNFT {
     using Address for address;
     
-    event NewBid       (uint256 indexed tokenID, uint256 indexed bidAmount, bytes bidData);
+    event NewBid       (uint256 indexed tokenID, uint256 indexed bidAmount, bytes data);
+    event NewPrice     (uint256 indexed tokenID, uint256 indexed priceValue);
+    event TokenPropertyUpdated(uint tokenID, uint propertyID);
     event Transfer     (address indexed from, address indexed to, uint256 indexed tokenId);
-    event TransferData (bytes data);
+    event TransferData (bytes data);   
     
     mapping (uint256 => Properties) private _tokenProperties;
     mapping (uint32 => Fee)         public feeLevels; // level # => (fee receiver, fee percentage)
@@ -179,11 +181,16 @@ contract ExtendedNFT is ICallistoNFT {
         // Check permission criteria
 
         _tokenProperties[_tokenId].properties.push(_content);
+        
+        uint newPropertyID = _tokenProperties[_tokenId].properties.length - 1;
+
+        emit TokenPropertyUpdated(_tokenId, newPropertyID);
     }
 
     function modifyProperty(uint256 _tokenId, uint256 _propertyId, string calldata _content) public /* onlyOwner or onlyTokenOwner*/
     {
         _tokenProperties[_tokenId].properties[_propertyId] = _content;
+        emit TokenPropertyUpdated(_tokenId, _propertyId);
     }
 
     function appendProperty(uint256 _tokenId, uint256 _propertyId, string calldata _content) public /* onlyOwner or onlyTokenOwner*/
@@ -205,6 +212,7 @@ contract ExtendedNFT is ICallistoNFT {
     function setPrice(uint256 _tokenId, uint256 _amountInWEI) checkTrade(_tokenId) public virtual override {
         require(ownerOf(_tokenId) == msg.sender, "Setting asks is only allowed for owned NFTs!");
         _asks[_tokenId] = _amountInWEI;
+        emit NewPrice(_tokenId, _amountInWEI);
     }
     
     function setBid(uint256 _tokenId, bytes calldata _data) payable checkTrade(_tokenId) public virtual override
@@ -231,6 +239,7 @@ contract ExtendedNFT is ICallistoNFT {
         
         _bidder.transfer(_bid);
         delete _bids[_tokenId];
+        emit NewBid(_tokenId, 0, "0x7769746864726177426964");
         return true;
     }
     
