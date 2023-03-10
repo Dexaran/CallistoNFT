@@ -24,6 +24,8 @@ interface IClassifiedNFT is ICallistoNFT  {
  * @dev This extension adds propeties to NFTs based on classes.
  */
 abstract contract ClassifiedNFT is CallistoNFT, IClassifiedNFT {
+    constructor(string memory name_, string memory symbol_, uint256 _defaultFee) CallistoNFT(name_, symbol_, _defaultFee) {
+    }
 
     event ClassPropertyUpdated(uint classID, uint propertyID);
     event TokenClassChanged(uint _tokenID, uint _tokenClass);
@@ -50,7 +52,7 @@ abstract contract ClassifiedNFT is CallistoNFT, IClassifiedNFT {
         nextClassIndex++;
     }
 
-    function addTokenClassProperties(uint256 _classId, uint256 _propertiesCount) public override /* onlyOwner */
+    function addTokenClassProperties(uint256 _classId, uint256 _propertiesCount) public /* onlyOwner */
     {
         for (uint i = 0; i < _propertiesCount; i++)
         {
